@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  webapp4docker:
+    image: webapp4docker
+    build:
+      context: .
+      dockerfile: myWebApp4Docker/Dockerfile
