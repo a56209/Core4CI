@@ -1,20 +1,16 @@
-﻿FROM microsoft/aspnetcore:2.0 AS base
+﻿FROM microsoft/dotnet:2.1-sdk AS build-env
 WORKDIR /app
-EXPOSE 80
 
-FROM microsoft/aspnetcore-build:2.0 AS build
-WORKDIR /src
-COPY *.sln ./
-COPY myWebApp4Docker/myWebApp4Docker.csproj myWebApp4Docker/
+# Copy csproj and restore as distinct layers
+COPY *.csproj ./
 RUN dotnet restore
-COPY . .
-WORKDIR /src/myWebApp4Docker
-RUN dotnet build -c Release -o /app
 
-FROM build AS publish
-RUN dotnet publish -c Release -o /app
+#Copy everything else and build
+COPY . ./
+RUN dotnet publish -c Release -o out
 
-FROM base AS final
+#Build runtime image
+FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
-COPY --from=publish /app .
+COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "myWebApp4Docker.dll"]
